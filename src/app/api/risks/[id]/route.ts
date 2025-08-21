@@ -10,6 +10,12 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
+  // Skip during build time
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    const apiError = createApiError(503, 'Service temporarily unavailable');
+    return NextResponse.json(apiError, { status: 503 });
+  }
+
   try {
     const { id } = params;
     
@@ -49,6 +55,12 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
+  // Skip during build time
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    const apiError = createApiError(503, 'Service temporarily unavailable');
+    return NextResponse.json(apiError, { status: 503 });
+  }
+
   try {
     const { id } = params;
     
@@ -58,7 +70,6 @@ export async function DELETE(
     }
     
     await deleteRisk(id);
-    
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Error deleting risk:', error);

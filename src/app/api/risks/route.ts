@@ -7,6 +7,11 @@ import { createApiError } from '@/lib/errors';
  * GET /api/risks - List risks with optional filtering
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  // Skip during build time
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    return NextResponse.json([], { status: 200 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q') || undefined;
@@ -26,6 +31,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * POST /api/risks - Create a new risk
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Skip during build time
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    const apiError = createApiError(503, 'Service temporarily unavailable');
+    return NextResponse.json(apiError, { status: 503 });
+  }
+
   try {
     const body = await request.json();
     
